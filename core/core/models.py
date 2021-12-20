@@ -30,7 +30,7 @@ class Category(models.Model):
 
 class BookDetails(models.Model):
     isbn = models.CharField(max_length=20, unique=True)
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=100, unique=True)
     publication_year = models.PositiveIntegerField(default=current_year(),
                                                    validators=[MinValueValidator(1984), max_value_current_year])
     language = models.CharField(max_length=100)
@@ -47,7 +47,7 @@ class BookDetails(models.Model):
 
 
 class Department(models.Model):
-    department_name = models.CharField(max_length=100)
+    department_name = models.CharField(max_length=100, unique=True)
 
     class Meta:
         verbose_name_plural = "Department"
