@@ -2,12 +2,18 @@ from ..models import BookDetails, StudentDetails, Borrower
 
 
 class BookViewResolver:
+    def __init__(self):
+        pass
+
     def __call__(self, source, info, **kwargs):
         book_details = BookDetails.objects.all()
         return book_details
 
 
 class StudentViewResolver:
+    def __init__(self):
+        pass
+
     def __call__(self, source, info, **kwargs):
         result = []
         students = StudentDetails.objects.all()

@@ -6,32 +6,14 @@ from ..models import BookDetails, Category, Department
 logger = logging.getLogger(__name__)
 
 
-class AddBookCopy(graphene.Mutation):
-    ok = graphene.Boolean()
-    message = graphene.String()
-
-    class Arguments:
-        book_id = graphene.ID(required=True)
-
-    @staticmethod
-    def mutate(self, info, book_id, **kwargs):
-        try:
-            book = BookDetails.objects.get(id=book_id)
-            book.no_of_copies_current = book.no_of_copies_current + 1
-            book.save()
-            return {"ok": True, "message": "Book copies updated"}
-        except book_id.DoesNotExist:
-            return {"ok": False, "message": "Book Id is missing"}
-        except Exception as e:
-            logger.error("Something went wrong! Error = " + str(e))
-            return {"ok": False, "message": "Failed to update book copy"}
-
-
 class AddNewBook(graphene.Mutation):
     ok = graphene.Boolean()
     message = graphene.String()
 
     class Arguments:
+        def __init__(self):
+            pass
+
         isbn = graphene.String(required=True)
         title = graphene.String(required=True)
         publication_year = graphene.Int()
@@ -56,10 +38,23 @@ class AddNewBook(graphene.Mutation):
                                publisher=kwargs.get("publisher"),
                                category=category)
             book.save()
-            return {"ok": True, "message": "Book Created in the database successfully"}
+            return {"ok": True, "message": "Book added successfully"}
+
+        except Category.DoesNotExist:
+            return {"ok": False, "message": "Category is not present"}
+
+        except kwargs.get("publisher") is None:
+            return {"ok": False, "message": "Publisher is not present"}
+
+        except kwargs.get("isbn") is None:
+            return {"ok": False, "message": "ISBN is not present"}
+
+        except kwargs.get("title") is None:
+            return {"ok": False, "message": "Title is not present"}
+
         except Exception as e:
             logger.error(e)
-            return {"ok": False, "message": "Something went wrong"}
+            return {"ok": False, "message": "Book already present."}
 
 
 class AddNewCategory(graphene.Mutation):
@@ -67,6 +62,9 @@ class AddNewCategory(graphene.Mutation):
     message = graphene.String()
 
     class Arguments:
+        def __init__(self):
+            pass
+
         category_name = graphene.String(required=True)
 
     @staticmethod
@@ -77,7 +75,7 @@ class AddNewCategory(graphene.Mutation):
             return {"ok": True, "message": "Category created successfully"}
         except Exception as e:
             logger.error(e)
-            return {"ok": False, "message": "Something went wrong"}
+            return {"ok": False, "message": "Category already present"}
 
 
 class AddNewDepartment(graphene.Mutation):
@@ -85,6 +83,9 @@ class AddNewDepartment(graphene.Mutation):
     message = graphene.String()
 
     class Arguments:
+        def __init__(self):
+            pass
+
         department_name = graphene.String(required=True)
 
     @staticmethod
@@ -95,11 +96,10 @@ class AddNewDepartment(graphene.Mutation):
             return {"ok": True, "message": "Department created successfully"}
         except Exception as e:
             logger.error(e)
-            return {"ok": False, "message": "Something went wrong"}
+            return {"ok": False, "message": "Department already exist"}
 
 
 class Mutation(graphene.ObjectType):
-    add_book_copy = AddBookCopy.Field()
     add_new_category = AddNewCategory.Field()
     add_new_book = AddNewBook.Field()
     add_new_department = AddNewDepartment.Field()
