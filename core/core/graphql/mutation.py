@@ -1,7 +1,7 @@
 import graphene
 import logging
 import datetime
-from ..models import BookDetails, Category, Department
+from ..models import BookDetails, Category, Department, Borrower, StudentDetails
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +99,42 @@ class AddNewDepartment(graphene.Mutation):
             return {"ok": False, "message": "Department already exist"}
 
 
+class BorrowBooksByStudent(graphene.Mutation):
+    ok = graphene.Boolean()
+    message = graphene.String()
+
+    class Arguments:
+        def __init__(self):
+            pass
+
+        book_ids = graphene.List(graphene.ID)
+        student_id = graphene.ID(required=True)
+
+    @staticmethod
+    def mutate(self, info, student_id, book_ids, **kwargs):
+        try:
+            student = StudentDetails.objects.get(student_id=student_id)
+            for id in book_ids:
+                book = BookDetails.objects.get(id=id)
+                book.no_of_copies_current = book.no_of_copies_current - 1
+                book.save()
+                borrower = Borrower.objects.create()
+                borrower.borrowed_from_date = datetime.date.today()
+                borrower.borrowed_to_date = datetime.date.today() + datetime.timedelta(days=7)
+                borrower.book = book
+                borrower.save()
+                student.borrower.add(borrower)
+                student.save()
+
+            return {"ok": True, "message": "Borrowed Books added successfully to student " + student.student_name}
+
+        except Exception as e:
+            logger.error(e)
+            return {"ok": False, "message": "Something went wrong"}
+
+
 class Mutation(graphene.ObjectType):
     add_new_category = AddNewCategory.Field()
     add_new_book = AddNewBook.Field()
     add_new_department = AddNewDepartment.Field()
+    borrow_book_by_student = BorrowBooksByStudent.Field()

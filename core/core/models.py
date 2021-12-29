@@ -61,13 +61,13 @@ class Borrower(models.Model):
     borrowed_to_date = models.DateField(null=True, blank=False)
     actual_return_date = models.DateField(null=True, blank=True)
     is_return = models.BooleanField(default=False)
-    books = models.ManyToManyField(BookDetails)
+    book = models.ForeignKey(BookDetails, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         verbose_name_plural = "Borrower"
 
-    # def __str__(self):
-    #     return u'{0}'.format(self.id)
+    def __str__(self):
+        return u'{0}'.format(self.book.title)
 
 
 class StudentDetails(models.Model):
@@ -75,7 +75,7 @@ class StudentDetails(models.Model):
     student_name = models.CharField(max_length=100)
     gender = models.IntegerField(choices=GENDER_CHOICES)
     date_of_birth = models.DateField(null=True, blank=True)
-    borrower = models.ManyToManyField(Borrower)
+    borrower = models.ManyToManyField(Borrower, blank=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
     contact_number = models.CharField(max_length=12, unique=True)
 
